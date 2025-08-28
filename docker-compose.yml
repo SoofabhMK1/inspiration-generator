@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: inspiration_backend_svc
+    # 将容器的8001端口暴露出来，但不映射到主机
+    expose:
+      - "8001"
+
+  nginx:
+    # 这个服务将同时负责构建前端和运行Nginx
+    build:
+      context: . # 使用项目根目录作为构建上下文
+      dockerfile: nginx/Dockerfile.prod # 我们需要一个新的Dockerfile
+    container_name: inspiration_nginx_svc
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
