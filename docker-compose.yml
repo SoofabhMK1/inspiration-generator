@@ -1,12 +1,42 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:17-alpine  # 使用一个较新且轻量的PostgreSQL镜像
+    container_name: inspiration_db
+    restart: always # 保证容器在退出后总是会重启
+    environment:
+      # 这里定义了数据库的超级用户名、密码和默认创建的数据库名
+      # 在生产环境中，密码应该更复杂，并通过.env文件管理
+      - POSTGRES_USER=abc
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=inspire_db
+    volumes:
+      # 将数据库的数据持久化到主机的一个命名卷中
+      # 这样即使删除了容器，数据也不会丢失
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432" # 映射主机的5432端口到容器的5432端口
+    expose:
+      # 只在Docker内部网络暴露5432端口，不对外开放
+      - "5432"
   backend:
     build: ./backend
     container_name: inspiration_backend_svc
+    restart: always
+    environment:
+      # 将数据库连接信息作为环境变量传递给后端应用
+      # 后端代码将读取这些变量来连接数据库
+      - DATABASE_URL=postgresql://abc:123@db:5432/inspire_db
     # 将容器的8001端口暴露出来，但不映射到主机
     expose:
       - "8001"
+    ports:
+      - "8001:8001"
+    depends_on:
+      # 明确声明backend服务依赖于db服务
+      # 它会等待db容器启动后再启动自己
+      - db
 
   nginx:
     # 这个服务将同时负责构建前端和运行Nginx
@@ -14,7 +44,11 @@ services:
       context: . # 使用项目根目录作为构建上下文
       dockerfile: nginx/Dockerfile.prod # 我们需要一个新的Dockerfile
     container_name: inspiration_nginx_svc
+    restart: always
     ports:
       - "80:80"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

@@ -7,17 +7,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: HomeView
     },
+    // --- 新增的路由配置 ---
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-  ],
+      path: '/community',
+      name: 'community',
+      // 使用动态导入(lazy-loading)，这是一种优化技巧
+      // 只有当用户访问/community时，才会加载这个页面的代码
+      component: () => import('../views/CommunityView.vue')
+    }
+  ]
 })
 
 export default router
