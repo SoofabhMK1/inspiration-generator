@@ -18,6 +18,10 @@ from models import Base  # Import your Base from models.py
 # access to the values within the .ini file in use.
 config = context.config
 
+# Read DATABASE_URL from environment variable and set it for SQLAlchemy
+# This will override the empty sqlalchemy.url in alembic.ini
+config.set_main_option('sqlalchemy.url', os.environ.get('DATABASE_URL'))
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
